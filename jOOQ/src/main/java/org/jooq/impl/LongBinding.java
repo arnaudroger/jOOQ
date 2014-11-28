@@ -40,26 +40,27 @@
  */
 package org.jooq.impl;
 
+import org.jooq.*;
+import org.jooq.exception.SQLDialectNotSupportedException;
+import org.jooq.tools.Convert;
+import org.jooq.tools.JooqLogger;
+import org.jooq.tools.jdbc.JDBCUtils;
+import org.jooq.tools.jdbc.MockArray;
+import org.jooq.types.*;
+import org.jooq.util.postgres.PostgresUtils;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.sql.*;
+import java.sql.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
 import static java.lang.Boolean.TRUE;
 import static java.lang.Integer.toOctalString;
 import static java.util.Arrays.asList;
-// ...
-// ...
-import static org.jooq.SQLDialect.CUBRID;
-// ...
-import static org.jooq.SQLDialect.DERBY;
-import static org.jooq.SQLDialect.FIREBIRD;
-import static org.jooq.SQLDialect.H2;
-import static org.jooq.SQLDialect.HSQLDB;
-// ...
-// ...
-import static org.jooq.SQLDialect.MARIADB;
-import static org.jooq.SQLDialect.MYSQL;
-// ...
-import static org.jooq.SQLDialect.POSTGRES;
-import static org.jooq.SQLDialect.SQLITE;
-// ...
-// ...
+import static org.jooq.SQLDialect.*;
 import static org.jooq.conf.ParamType.INLINED;
 import static org.jooq.impl.DSL.name;
 import static org.jooq.impl.DSL.using;
@@ -71,69 +72,22 @@ import static org.jooq.tools.reflect.Reflect.on;
 import static org.jooq.util.postgres.PostgresUtils.toPGArrayString;
 import static org.jooq.util.postgres.PostgresUtils.toPGInterval;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.sql.Array;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.Date;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.sql.Types;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
-import java.util.UUID;
-
 // ...
-import org.jooq.Binding;
-import org.jooq.BindingGetResultSetContext;
-import org.jooq.BindingGetSQLInputContext;
-import org.jooq.BindingGetStatementContext;
-import org.jooq.BindingRegisterContext;
-import org.jooq.BindingSQLContext;
-import org.jooq.BindingSetSQLOutputContext;
-import org.jooq.BindingSetStatementContext;
-import org.jooq.Configuration;
-import org.jooq.Context;
-import org.jooq.Converter;
-import org.jooq.Converters;
-import org.jooq.DataType;
-import org.jooq.EnumType;
-import org.jooq.Field;
-import org.jooq.RenderContext;
-import org.jooq.Result;
-import org.jooq.Row;
-import org.jooq.SQLDialect;
-import org.jooq.Schema;
-import org.jooq.Scope;
-import org.jooq.UDTRecord;
-import org.jooq.exception.SQLDialectNotSupportedException;
-import org.jooq.tools.Convert;
-import org.jooq.tools.JooqLogger;
-import org.jooq.tools.jdbc.JDBCUtils;
-import org.jooq.tools.jdbc.MockArray;
-import org.jooq.types.DayToSecond;
-import org.jooq.types.Interval;
-import org.jooq.types.UByte;
-import org.jooq.types.UInteger;
-import org.jooq.types.ULong;
-import org.jooq.types.UNumber;
-import org.jooq.types.UShort;
-import org.jooq.types.YearToMonth;
-import org.jooq.util.postgres.PostgresUtils;
+// ...
+// ...
+// ...
+// ...
+// ...
+// ...
+// ...
+// ...
 
 /**
  * @author Lukas Eder
  */
-public class DefaultBinding<T, U> implements Binding<T, U> {
+public final class LongBinding<T, U> implements Binding<T, U> {
 
-    static final JooqLogger     log              = JooqLogger.getLogger(DefaultBinding.class);
+    static final JooqLogger     log              = JooqLogger.getLogger(LongBinding.class);
     private static final char[] HEX              = "0123456789abcdef".toCharArray();
 
     /**
@@ -149,11 +103,11 @@ public class DefaultBinding<T, U> implements Binding<T, U> {
     // constructor. Find a better design
     final boolean               isLob;
 
-    public DefaultBinding(Converter<T, U> converter) {
+    public LongBinding(Converter<T, U> converter) {
         this(converter, false);
     }
 
-    protected DefaultBinding(Converter<T, U> converter, boolean isLob) {
+    public LongBinding(Converter<T, U> converter, boolean isLob) {
         this.type = converter.fromType();
         this.converter = converter;
         this.isLob = isLob;
@@ -165,30 +119,13 @@ public class DefaultBinding<T, U> implements Binding<T, U> {
 
 
         if (converter == null && binding == null) {
-
-            if (type.getType().equals(String.class)) {
-                theBinding = (Binding) new StringBinding<T, T>(new IdentityConverter<T>(type.getType()), type.isLob());
-            } else if (type.getType().equals(int.class) || type.getType().equals(Integer.class) ) {
-                theBinding = (Binding) new IntBinding<T, T>(new IdentityConverter<T>(type.getType()), type.isLob());
-            } else if (type.getType().equals(long.class) || type.getType().equals(Long.class) ) {
-                theBinding = (Binding) new LongBinding<T, T>(new IdentityConverter<T>(type.getType()), type.isLob());
-            } else {
-                theBinding = (Binding) new DefaultBinding<T, T>(new IdentityConverter<T>(type.getType()), type.isLob());
-            }
+            theBinding = (Binding) new LongBinding<T, T>(new IdentityConverter<T>(type.getType()), type.isLob());
         }
         else if (converter == null) {
             theBinding = (Binding) binding;
         }
         else if (binding == null) {
-            if (type.getType().equals(String.class)) {
-                theBinding = (Binding) new StringBinding<X, U>(converter, type.isLob());
-            } else if (type.getType().equals(int.class) || type.getType().equals(Integer.class) ) {
-                theBinding = (Binding) new IntBinding<X, U>(converter, type.isLob());
-            } else if (type.getType().equals(long.class) || type.getType().equals(Long.class) ) {
-                theBinding = (Binding) new LongBinding<X, U>(converter, type.isLob());
-            } else {
-                theBinding = (Binding) new DefaultBinding<X, U>(converter, type.isLob());
-            }
+            theBinding = (Binding) new LongBinding<X, U>(converter, type.isLob());
         }
         else {
             theBinding = new Binding<T, U>() {
@@ -636,7 +573,7 @@ public class DefaultBinding<T, U> implements Binding<T, U> {
 
                     for (Object o : ((Object[]) val)) {
                         render.sql(separator);
-                        new DefaultBinding<Object, Object>(new IdentityConverter(type.getComponentType()), isLob).sql(new DefaultBindingSQLContext<Object>(ctx.configuration(), ctx.render(), o));
+                        new LongBinding<Object, Object>(new IdentityConverter(type.getComponentType()), isLob).sql(new DefaultBindingSQLContext<Object>(ctx.configuration(), ctx.render(), o));
                         separator = ", ";
                     }
 
@@ -650,7 +587,7 @@ public class DefaultBinding<T, U> implements Binding<T, U> {
 
                     for (Object o : ((Object[]) val)) {
                         render.sql(separator);
-                        new DefaultBinding<Object, Object>(new IdentityConverter(type.getComponentType()), isLob).sql(new DefaultBindingSQLContext<Object>(ctx.configuration(), ctx.render(), o));
+                        new LongBinding<Object, Object>(new IdentityConverter(type.getComponentType()), isLob).sql(new DefaultBindingSQLContext<Object>(ctx.configuration(), ctx.render(), o));
                         separator = ", ";
                     }
 
@@ -672,10 +609,10 @@ public class DefaultBinding<T, U> implements Binding<T, U> {
                 String literal = ((EnumType) val).getLiteral();
 
                 if (literal == null) {
-                    new DefaultBinding<Object, Object>(new IdentityConverter(String.class), isLob).sql(new DefaultBindingSQLContext<Object>(ctx.configuration(), ctx.render(), literal));
+                    new LongBinding<Object, Object>(new IdentityConverter(String.class), isLob).sql(new DefaultBindingSQLContext<Object>(ctx.configuration(), ctx.render(), literal));
                 }
                 else {
-                    new DefaultBinding<Object, Object>(new IdentityConverter(String.class), isLob).sql(new DefaultBindingSQLContext<Object>(ctx.configuration(), ctx.render(), literal));
+                    new LongBinding<Object, Object>(new IdentityConverter(String.class), isLob).sql(new DefaultBindingSQLContext<Object>(ctx.configuration(), ctx.render(), literal));
                 }
             }
             else if (UDTRecord.class.isAssignableFrom(type)) {
@@ -1274,322 +1211,14 @@ public class DefaultBinding<T, U> implements Binding<T, U> {
     @SuppressWarnings("unchecked")
     @Override
     public void get(BindingGetResultSetContext<U> ctx) throws SQLException {
-        T result = null;
-
-        if (type == Blob.class) {
-            result = (T) ctx.resultSet().getBlob(ctx.index());
-        }
-        else if (type == Boolean.class) {
-            result = (T) wasNull(ctx.resultSet(), Boolean.valueOf(ctx.resultSet().getBoolean(ctx.index())));
-        }
-        else if (type == BigInteger.class) {
-            // The SQLite JDBC driver doesn't support BigDecimals
-            if (ctx.configuration().dialect() == SQLDialect.SQLITE) {
-                result = Convert.convert(ctx.resultSet().getString(ctx.index()), (Class<T>) BigInteger.class);
-            }
-            else {
-                BigDecimal b = ctx.resultSet().getBigDecimal(ctx.index());
-                result = (T) (b == null ? null : b.toBigInteger());
-            }
-        }
-        else if (type == BigDecimal.class) {
-            // The SQLite JDBC driver doesn't support BigDecimals
-            if (ctx.configuration().dialect() == SQLDialect.SQLITE) {
-                result = Convert.convert(ctx.resultSet().getString(ctx.index()), (Class<T>) BigDecimal.class);
-            }
-            else {
-                result = (T) ctx.resultSet().getBigDecimal(ctx.index());
-            }
-        }
-        else if (type == Byte.class) {
-            result = (T) wasNull(ctx.resultSet(), Byte.valueOf(ctx.resultSet().getByte(ctx.index())));
-        }
-        else if (type == byte[].class) {
-            result = (T) ctx.resultSet().getBytes(ctx.index());
-        }
-        else if (type == Clob.class) {
-            result = (T) ctx.resultSet().getClob(ctx.index());
-        }
-        else if (type == Date.class) {
-            result = (T) getDate(ctx.configuration().dialect(), ctx.resultSet(), ctx.index());
-        }
-        else if (type == Double.class) {
-            result = (T) wasNull(ctx.resultSet(), Double.valueOf(ctx.resultSet().getDouble(ctx.index())));
-        }
-        else if (type == Float.class) {
-            result = (T) wasNull(ctx.resultSet(), Float.valueOf(ctx.resultSet().getFloat(ctx.index())));
-        }
-        else if (type == Integer.class) {
-            result = (T) wasNull(ctx.resultSet(), Integer.valueOf(ctx.resultSet().getInt(ctx.index())));
-        }
-        else if (type == Long.class) {
-            result = (T) wasNull(ctx.resultSet(), Long.valueOf(ctx.resultSet().getLong(ctx.index())));
-        }
-        else if (type == Short.class) {
-            result = (T) wasNull(ctx.resultSet(), Short.valueOf(ctx.resultSet().getShort(ctx.index())));
-        }
-        else if (type == String.class) {
-            result = (T) ctx.resultSet().getString(ctx.index());
-        }
-        else if (type == Time.class) {
-            result = (T) getTime(ctx.configuration().dialect(), ctx.resultSet(), ctx.index());
-        }
-        else if (type == Timestamp.class) {
-            result = (T) getTimestamp(ctx.configuration().dialect(), ctx.resultSet(), ctx.index());
-        }
-        else if (type == YearToMonth.class) {
-            if (ctx.configuration().dialect() == POSTGRES) {
-                Object object = ctx.resultSet().getObject(ctx.index());
-                result = (T) (object == null ? null : PostgresUtils.toYearToMonth(object));
-            }
-            else {
-                String string = ctx.resultSet().getString(ctx.index());
-                result = (T) (string == null ? null : YearToMonth.valueOf(string));
-            }
-        }
-        else if (type == DayToSecond.class) {
-            if (ctx.configuration().dialect() == POSTGRES) {
-                Object object = ctx.resultSet().getObject(ctx.index());
-                result = (T) (object == null ? null : PostgresUtils.toDayToSecond(object));
-            }
-            else {
-                String string = ctx.resultSet().getString(ctx.index());
-                result = (T) (string == null ? null : DayToSecond.valueOf(string));
-            }
-        }
-        else if (type == UByte.class) {
-            result = (T) Convert.convert(ctx.resultSet().getString(ctx.index()), UByte.class);
-        }
-        else if (type == UShort.class) {
-            result = (T) Convert.convert(ctx.resultSet().getString(ctx.index()), UShort.class);
-        }
-        else if (type == UInteger.class) {
-            result = (T) Convert.convert(ctx.resultSet().getString(ctx.index()), UInteger.class);
-        }
-        else if (type == ULong.class) {
-            result = (T) Convert.convert(ctx.resultSet().getString(ctx.index()), ULong.class);
-        }
-        else if (type == UUID.class) {
-            switch (ctx.configuration().dialect().family()) {
-
-                // [#1624] Some JDBC drivers natively support the
-                // java.util.UUID data type
-                case H2:
-                case POSTGRES: {
-                    result = (T) ctx.resultSet().getObject(ctx.index());
-                    break;
-                }
-
-                /* [pro] xx
-                xx xxxxx xxx xxxxxxxx xxxx xxxx xxxxx xx xx xxxx xxxx xxxxxxxx
-                xx xxxx xx xxxx xxxxxxxxxx xxxxxxx xxxx xxxxxxxxxxxxxxxxxx
-                xxxx xxxxxxxxxx
-                xxxx xxxxxxx
-
-                xx [/pro] */
-                // Most databases don't have such a type. In this case, jOOQ
-                // simulates the type
-                default: {
-                    result = (T) Convert.convert(ctx.resultSet().getString(ctx.index()), UUID.class);
-                    break;
-                }
-            }
-        }
-
-        // The type byte[] is handled earlier. byte[][] can be handled here
-        else if (type.isArray()) {
-            switch (ctx.configuration().dialect()) {
-                case POSTGRES: {
-                    result = pgGetArray(ctx, ctx.resultSet(), type, ctx.index());
-                    break;
-                }
-
-                default:
-                    // Note: due to a HSQLDB bug, it is not recommended to call rs.getObject() here:
-                    // See https://sourceforge.net/tracker/?func=detail&aid=3181365&group_id=23316&atid=378131
-                    result = (T) convertArray(ctx.resultSet().getArray(ctx.index()), (Class<? extends Object[]>) type);
-                    break;
-            }
-        }
-        /* [pro] xx
-        xxxx xx xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx x
-            xxxxxx x xxx xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxx xxxxxxx xxxxxxxxxxxxxxxx xxxxxx
-        x
-        xx [/pro] */
-        else if (EnumType.class.isAssignableFrom(type)) {
-            result = getEnumType(type, ctx.resultSet().getString(ctx.index()));
-        }
-        else if (UDTRecord.class.isAssignableFrom(type)) {
-            switch (ctx.configuration().dialect()) {
-                case POSTGRES:
-                    result = (T) pgNewUDTRecord(type, ctx.resultSet().getObject(ctx.index()));
-                    break;
-
-                default:
-                    result = (T) ctx.resultSet().getObject(ctx.index(), DataTypes.udtRecords());
-                    break;
-            }
-
-        }
-        else if (Result.class.isAssignableFrom(type)) {
-            ResultSet nested = (ResultSet) ctx.resultSet().getObject(ctx.index());
-            result = (T) DSL.using(ctx.configuration()).fetch(nested);
-        }
-        else {
-            result = (T) unlob(ctx.resultSet().getObject(ctx.index()));
-        }
-
+        T result = (T) Long.valueOf(ctx.resultSet().getLong(ctx.index()));
         ctx.value(converter.from(result));
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public void get(BindingGetStatementContext<U> ctx) throws SQLException {
-        T result = null;
-
-        if (type == Blob.class) {
-            result = (T) ctx.statement().getBlob(ctx.index());
-        }
-        else if (type == Boolean.class) {
-            result = (T) wasNull(ctx.statement(), Boolean.valueOf(ctx.statement().getBoolean(ctx.index())));
-        }
-        else if (type == BigInteger.class) {
-            BigDecimal d = ctx.statement().getBigDecimal(ctx.index());
-            result = (T) (d == null ? null : d.toBigInteger());
-        }
-        else if (type == BigDecimal.class) {
-            result = (T) ctx.statement().getBigDecimal(ctx.index());
-        }
-        else if (type == Byte.class) {
-            result = (T) wasNull(ctx.statement(), Byte.valueOf(ctx.statement().getByte(ctx.index())));
-        }
-        else if (type == byte[].class) {
-            result = (T) ctx.statement().getBytes(ctx.index());
-        }
-        else if (type == Clob.class) {
-            result = (T) ctx.statement().getClob(ctx.index());
-        }
-        else if (type == Date.class) {
-            result = (T) ctx.statement().getDate(ctx.index());
-        }
-        else if (type == Double.class) {
-            result = (T) wasNull(ctx.statement(), Double.valueOf(ctx.statement().getDouble(ctx.index())));
-        }
-        else if (type == Float.class) {
-            result = (T) wasNull(ctx.statement(), Float.valueOf(ctx.statement().getFloat(ctx.index())));
-        }
-        else if (type == Integer.class) {
-            result = (T) wasNull(ctx.statement(), Integer.valueOf(ctx.statement().getInt(ctx.index())));
-        }
-        else if (type == Long.class) {
-            result = (T) wasNull(ctx.statement(), Long.valueOf(ctx.statement().getLong(ctx.index())));
-        }
-        else if (type == Short.class) {
-            result = (T) wasNull(ctx.statement(), Short.valueOf(ctx.statement().getShort(ctx.index())));
-        }
-        else if (type == String.class) {
-            result = (T) ctx.statement().getString(ctx.index());
-        }
-        else if (type == Time.class) {
-            result = (T) ctx.statement().getTime(ctx.index());
-        }
-        else if (type == Timestamp.class) {
-            result = (T) ctx.statement().getTimestamp(ctx.index());
-        }
-        else if (type == YearToMonth.class) {
-            if (ctx.configuration().dialect() == POSTGRES) {
-                Object object = ctx.statement().getObject(ctx.index());
-                result = (T) (object == null ? null : PostgresUtils.toYearToMonth(object));
-            }
-            else {
-                String string = ctx.statement().getString(ctx.index());
-                result = (T) (string == null ? null : YearToMonth.valueOf(string));
-            }
-        }
-        else if (type == DayToSecond.class) {
-            if (ctx.configuration().dialect() == POSTGRES) {
-                Object object = ctx.statement().getObject(ctx.index());
-                result = (T) (object == null ? null : PostgresUtils.toDayToSecond(object));
-            }
-            else {
-                String string = ctx.statement().getString(ctx.index());
-                result = (T) (string == null ? null : DayToSecond.valueOf(string));
-            }
-        }
-        else if (type == UByte.class) {
-            String string = ctx.statement().getString(ctx.index());
-            result = (T) (string == null ? null : UByte.valueOf(string));
-        }
-        else if (type == UShort.class) {
-            String string = ctx.statement().getString(ctx.index());
-            result = (T) (string == null ? null : UShort.valueOf(string));
-        }
-        else if (type == UInteger.class) {
-            String string = ctx.statement().getString(ctx.index());
-            result = (T) (string == null ? null : UInteger.valueOf(string));
-        }
-        else if (type == ULong.class) {
-            String string = ctx.statement().getString(ctx.index());
-            result = (T) (string == null ? null : ULong.valueOf(string));
-        }
-        else if (type == UUID.class) {
-            switch (ctx.configuration().dialect().family()) {
-
-                // [#1624] Some JDBC drivers natively support the
-                // java.util.UUID data type
-                case H2:
-                case POSTGRES: {
-                    result = (T) ctx.statement().getObject(ctx.index());
-                    break;
-                }
-
-                /* [pro] xx
-                xx xxxxx xxx xxxxxxxx xxxx xxxx xxxxx xx xx xxxx xxxx xxxxxxxx
-                xx xxxx xx xxxx xxxxxxxxxx xxxxxxx xxxx xxxxxxxxxxxxxxxxxx
-                xxxx xxxxxxxxxx
-                xxxx xxxxxxx
-
-                xx [/pro] */
-                // Most databases don't have such a type. In this case, jOOQ
-                // simulates the type
-                default: {
-                    result = (T) Convert.convert(ctx.statement().getString(ctx.index()), UUID.class);
-                    break;
-                }
-            }
-        }
-
-        // The type byte[] is handled earlier. byte[][] can be handled here
-        else if (type.isArray()) {
-            result = (T) convertArray(ctx.statement().getObject(ctx.index()), (Class<? extends Object[]>)type);
-        }
-        /* [pro] xx
-        xxxx xx xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx x
-            xxxxxx x xxx xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxx xxxxxxx xxxxxxxxxxxxxxxx xxxxxx
-        x
-        xx [/pro] */
-        else if (EnumType.class.isAssignableFrom(type)) {
-            result = getEnumType(type, ctx.statement().getString(ctx.index()));
-        }
-        else if (UDTRecord.class.isAssignableFrom(type)) {
-            switch (ctx.configuration().dialect()) {
-                case POSTGRES:
-                    result = (T) pgNewUDTRecord(type, ctx.statement().getObject(ctx.index()));
-                    break;
-
-                default:
-                    result = (T) ctx.statement().getObject(ctx.index(), DataTypes.udtRecords());
-                    break;
-            }
-        }
-        else if (Result.class.isAssignableFrom(type)) {
-            ResultSet nested = (ResultSet) ctx.statement().getObject(ctx.index());
-            result = (T) DSL.using(ctx.configuration()).fetch(nested);
-        }
-        else {
-            result = (T) ctx.statement().getObject(ctx.index());
-        }
-
+        T result = (T) Long.valueOf(ctx.statement().getLong(ctx.index()));
         ctx.value(converter.from(result));
     }
 
@@ -2031,7 +1660,7 @@ public class DefaultBinding<T, U> implements Binding<T, U> {
      * @param object An object of type PGobject. The actual argument type cannot
      *            be expressed in the method signature, as no explicit
      *            dependency to postgres logic is desired
-     * @return The converted {@link UDTRecord}
+     * @return The converted {@link org.jooq.UDTRecord}
      */
     @SuppressWarnings("unchecked")
     private static final UDTRecord<?> pgNewUDTRecord(Class<?> type, final Object object) throws SQLException {
@@ -2081,7 +1710,7 @@ public class DefaultBinding<T, U> implements Binding<T, U> {
             try {
                 while (rs.next()) {
                     DefaultBindingGetResultSetContext<T> out = new DefaultBindingGetResultSetContext<T>(ctx.configuration(), rs, 2);
-                    new DefaultBinding<T, T>(new IdentityConverter<T>((Class<T>) type.getComponentType()), false).get(out);
+                    new LongBinding<T, T>(new IdentityConverter<T>((Class<T>) type.getComponentType()), false).get(out);
                     result.add(out.value());
                 }
             }

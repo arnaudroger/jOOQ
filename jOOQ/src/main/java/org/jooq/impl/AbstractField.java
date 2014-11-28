@@ -129,9 +129,7 @@ abstract class AbstractField<T> extends AbstractQueryPart implements Field<T> {
         this.binding =
             binding != null
           ? binding
-          : type instanceof ConvertedDataType
-          ? ((ConvertedDataType<?, T>) type).binding()
-          : new DefaultBinding<T, T>(new IdentityConverter<T>(type.getType()), type.isLob());
+          : DefaultBinding.<T, Object, T>newBinding(null, type, null);
     }
 
     // ------------------------------------------------------------------------
