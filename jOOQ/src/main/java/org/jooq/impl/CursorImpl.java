@@ -68,17 +68,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import org.jooq.Cursor;
-import org.jooq.ExecuteContext;
-import org.jooq.ExecuteListener;
-import org.jooq.Field;
-import org.jooq.Record;
-import org.jooq.RecordHandler;
-import org.jooq.RecordMapper;
-import org.jooq.RecordType;
-import org.jooq.Result;
-import org.jooq.Row;
-import org.jooq.Table;
+import org.jooq.*;
 import org.jooq.exception.ControlFlowSignal;
 import org.jooq.tools.JooqLogger;
 import org.jooq.tools.jdbc.JDBC41ResultSet;
@@ -1464,7 +1454,9 @@ class CursorImpl<R extends Record> implements Cursor<R> {
 
                 for (int i = 0; i < fields.length; i++) {
                     setValue(record, fields[i], i);
+                }
 
+                for (int i = 0; i < fields.length; i++) {
                     if (intern[i]) {
                         record.intern0(i);
                     }
@@ -1480,9 +1472,10 @@ class CursorImpl<R extends Record> implements Cursor<R> {
              * Utility method to prevent unnecessary unchecked conversions
              */
             private final <T> void setValue(AbstractRecord record, Field<T> field, int index) throws SQLException {
-                DefaultBindingGetResultSetContext<T> out = new DefaultBindingGetResultSetContext<T>(ctx.configuration(), ctx.resultSet(), index + 1);
-                field.getBinding().get(out);
-                T value = out.value();
+//                DefaultBindingGetResultSetContext<T> out = new DefaultBindingGetResultSetContext<T>(ctx.configuration(), ctx.resultSet(), index + 1);
+                Binding<?, T> binding = field.getBinding();
+//                binding.get(out);
+                T value = binding.get(ctx.configuration(), ctx.resultSet(),index+ 1);
 
                 record.values[index] = value;
                 record.originals[index] = value;

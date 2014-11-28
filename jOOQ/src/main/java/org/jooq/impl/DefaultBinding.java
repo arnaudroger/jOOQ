@@ -239,6 +239,11 @@ public class DefaultBinding<T, U> implements Binding<T, U> {
                 public void get(BindingGetSQLInputContext<U> ctx) throws SQLException {
                     binding.get(ctx.convert(converter));
                 }
+
+                @Override
+                public U get(Configuration configuration, ResultSet resultSet, int i) throws SQLException {
+                    return converter.from(binding.get(configuration, resultSet, i));
+                }
             };
         }
 
@@ -1711,6 +1716,13 @@ public class DefaultBinding<T, U> implements Binding<T, U> {
 
         ctx.value(converter.from(result));
     }
+
+    public U get(Configuration configuration, ResultSet resultSet, int i) throws SQLException {
+        DefaultBindingGetResultSetContext context = new DefaultBindingGetResultSetContext(configuration, resultSet, i);
+        get(context);
+        return (U) context.value();
+    }
+
 
 
 

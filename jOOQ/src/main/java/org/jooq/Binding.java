@@ -191,4 +191,6 @@ public interface Binding<T, U> extends Serializable {
      *             {@link DataAccessException}s.
      */
     void get(BindingGetSQLInputContext<U> ctx) throws SQLException;
+
+    U get(Configuration configuration, ResultSet resultSet, int i) throws SQLException;
 }

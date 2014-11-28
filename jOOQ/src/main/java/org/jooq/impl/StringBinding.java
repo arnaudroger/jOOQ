@@ -176,6 +176,11 @@ public final class StringBinding<T, U> implements Binding<T, U> {
                 public void get(BindingGetSQLInputContext<U> ctx) throws SQLException {
                     binding.get(ctx.convert(converter));
                 }
+                @Override
+                public U get(Configuration configuration, ResultSet resultSet, int i) throws SQLException {
+                    return converter.from(binding.get(configuration, resultSet, i));
+                }
+
             };
         }
 
@@ -1339,6 +1344,11 @@ public final class StringBinding<T, U> implements Binding<T, U> {
         }
 
         ctx.value(converter.from(result));
+    }
+
+    @Override
+    public U get(Configuration configuration, ResultSet resultSet, int i) throws SQLException {
+        return converter.from((T) resultSet.getString(i));
     }
 
 

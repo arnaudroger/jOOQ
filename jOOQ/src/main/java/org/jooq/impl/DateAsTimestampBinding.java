@@ -43,20 +43,11 @@ package org.jooq.impl;
 // ...
 import static org.jooq.impl.DSL.val;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
-import org.jooq.Binding;
-import org.jooq.BindingGetResultSetContext;
-import org.jooq.BindingGetSQLInputContext;
-import org.jooq.BindingGetStatementContext;
-import org.jooq.BindingRegisterContext;
-import org.jooq.BindingSQLContext;
-import org.jooq.BindingSetSQLOutputContext;
-import org.jooq.BindingSetStatementContext;
-import org.jooq.Converter;
-import org.jooq.RenderContext;
-import org.jooq.SQLDialect;
+import org.jooq.*;
 
 /**
  * A binding that implements the date-as-timestamp semantics of the jOOQ code
@@ -134,5 +125,12 @@ public class DateAsTimestampBinding implements Binding<Timestamp, Timestamp> {
     @Override
     public final void get(BindingGetSQLInputContext<Timestamp> ctx) throws SQLException {
         delegate.get(ctx);
+    }
+
+    @Override
+    public Timestamp get(Configuration configuration, ResultSet resultSet, int i) throws SQLException {
+        DefaultBindingGetResultSetContext context = new DefaultBindingGetResultSetContext(configuration, resultSet, i);
+        get(context);
+        return (Timestamp) context.value();
     }
 }

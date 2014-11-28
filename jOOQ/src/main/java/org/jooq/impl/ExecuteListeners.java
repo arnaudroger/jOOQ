@@ -103,70 +103,80 @@ class ExecuteListeners implements ExecuteListener {
 
     @Override
     public final void start(ExecuteContext ctx) {
-        for (ExecuteListener listener : listeners) {
+        for (int i = 0; i < listeners.size(); i++) {
+            ExecuteListener listener = listeners.get(i);
             listener.start(ctx);
         }
     }
 
     @Override
     public final void renderStart(ExecuteContext ctx) {
-        for (ExecuteListener listener : listeners) {
+        for (int i = 0; i < listeners.size(); i++) {
+            ExecuteListener listener = listeners.get(i);
             listener.renderStart(ctx);
         }
     }
 
     @Override
     public final void renderEnd(ExecuteContext ctx) {
-        for (ExecuteListener listener : listeners) {
+        for (int i = 0; i < listeners.size(); i++) {
+            ExecuteListener listener = listeners.get(i);
             listener.renderEnd(ctx);
         }
     }
 
     @Override
     public final void prepareStart(ExecuteContext ctx) {
-        for (ExecuteListener listener : listeners) {
+        for (int i = 0; i < listeners.size(); i++) {
+            ExecuteListener listener = listeners.get(i);
             listener.prepareStart(ctx);
         }
     }
 
     @Override
     public final void prepareEnd(ExecuteContext ctx) {
-        for (ExecuteListener listener : listeners) {
+        for (int i = 0; i < listeners.size(); i++) {
+            ExecuteListener listener = listeners.get(i);
             listener.prepareEnd(ctx);
         }
     }
 
     @Override
     public final void bindStart(ExecuteContext ctx) {
-        for (ExecuteListener listener : listeners) {
+        for (int i = 0; i < listeners.size(); i++) {
+            ExecuteListener listener = listeners.get(i);
             listener.bindStart(ctx);
         }
     }
 
     @Override
     public final void bindEnd(ExecuteContext ctx) {
-        for (ExecuteListener listener : listeners) {
+        for (int i = 0; i < listeners.size(); i++) {
+            ExecuteListener listener = listeners.get(i);
             listener.bindEnd(ctx);
         }
     }
 
     @Override
     public final void executeStart(ExecuteContext ctx) {
-        for (ExecuteListener listener : listeners) {
+        for (int i = 0; i < listeners.size(); i++) {
+            ExecuteListener listener = listeners.get(i);
             listener.executeStart(ctx);
         }
     }
 
     @Override
     public final void executeEnd(ExecuteContext ctx) {
-        for (ExecuteListener listener : listeners) {
+        for (int i = 0; i < listeners.size(); i++) {
+            ExecuteListener listener = listeners.get(i);
             listener.executeEnd(ctx);
         }
     }
 
     @Override
     public final void fetchStart(ExecuteContext ctx) {
-        for (ExecuteListener listener : listeners) {
+        for (int i = 0; i < listeners.size(); i++) {
+            ExecuteListener listener = listeners.get(i);
             listener.fetchStart(ctx);
         }
     }
@@ -175,21 +185,24 @@ class ExecuteListeners implements ExecuteListener {
     public final void resultStart(ExecuteContext ctx) {
         resultStart = true;
 
-        for (ExecuteListener listener : listeners) {
+        for (int i = 0; i < listeners.size(); i++) {
+            ExecuteListener listener = listeners.get(i);
             listener.resultStart(ctx);
         }
     }
 
     @Override
     public final void recordStart(ExecuteContext ctx) {
-        for (ExecuteListener listener : listeners) {
+        for (int i = 0; i < listeners.size(); i++) {
+            ExecuteListener listener = listeners.get(i);
             listener.recordStart(ctx);
         }
     }
 
     @Override
     public final void recordEnd(ExecuteContext ctx) {
-        for (ExecuteListener listener : listeners) {
+        for (int i = 0; i < listeners.size(); i++) {
+            ExecuteListener listener = listeners.get(i);
             listener.recordEnd(ctx);
         }
     }
@@ -198,7 +211,8 @@ class ExecuteListeners implements ExecuteListener {
     public final void resultEnd(ExecuteContext ctx) {
         resultStart = false;
 
-        for (ExecuteListener listener : listeners) {
+        for (int i = 0; i < listeners.size(); i++) {
+            ExecuteListener listener = listeners.get(i);
             listener.resultEnd(ctx);
         }
 
@@ -213,7 +227,8 @@ class ExecuteListeners implements ExecuteListener {
             fetchEnd = true;
         }
         else {
-            for (ExecuteListener listener : listeners) {
+            for (int i = 0; i < listeners.size(); i++) {
+                ExecuteListener listener = listeners.get(i);
                 listener.fetchEnd(ctx);
             }
         }
@@ -221,21 +236,24 @@ class ExecuteListeners implements ExecuteListener {
 
     @Override
     public final void end(ExecuteContext ctx) {
-        for (ExecuteListener listener : listeners) {
+        for (int i = 0; i < listeners.size(); i++) {
+            ExecuteListener listener = listeners.get(i);
             listener.end(ctx);
         }
     }
 
     @Override
     public final void exception(ExecuteContext ctx) {
-        for (ExecuteListener listener : listeners) {
+        for (int i = 0; i < listeners.size(); i++)  {
+            ExecuteListener listener = listeners.get(i);
             listener.exception(ctx);
         }
     }
 
     @Override
     public final void warning(ExecuteContext ctx) {
-        for (ExecuteListener listener : listeners) {
+        for (int i = 0; i < listeners.size(); i++) {
+            ExecuteListener listener = listeners.get(i);
             listener.warning(ctx);
         }
     }
