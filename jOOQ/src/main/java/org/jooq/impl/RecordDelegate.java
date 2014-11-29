@@ -146,17 +146,21 @@ class RecordDelegate<R extends Record> {
         if (listeners != null) {
             for (int i = 0; i < listeners.length; i++) {
                 RecordListener listener = listeners[i];
-                switch (type) {
-                    case LOAD:    listener.loadEnd(ctx);    break;
-                    case REFRESH: listener.refreshEnd(ctx); break;
-                    case STORE:   listener.storeEnd(ctx);   break;
-                    case INSERT:  listener.insertEnd(ctx);  break;
-                    case UPDATE:  listener.updateEnd(ctx);  break;
-                    case DELETE:  listener.deleteEnd(ctx);  break;
-                    default:
-                        throw new IllegalStateException("Type not supported: " + type);
-                }
+                listenerEnd(ctx, listener);
             }
+        }
+    }
+
+    private void listenerEnd(DefaultRecordContext ctx, RecordListener listener) {
+        switch (type) {
+            case LOAD:    listener.loadEnd(ctx);    break;
+            case REFRESH: listener.refreshEnd(ctx); break;
+            case STORE:   listener.storeEnd(ctx);   break;
+            case INSERT:  listener.insertEnd(ctx);  break;
+            case UPDATE:  listener.updateEnd(ctx);  break;
+            case DELETE:  listener.deleteEnd(ctx);  break;
+            default:
+                throw new IllegalStateException("Type not supported: " + type);
         }
     }
 
@@ -164,17 +168,21 @@ class RecordDelegate<R extends Record> {
         if (listeners != null) {
             for (int i = 0; i < listeners.length; i++) {
                 RecordListener listener = listeners[i];
-                switch (type) {
-                    case LOAD:    listener.loadStart(ctx);    break;
-                    case REFRESH: listener.refreshStart(ctx); break;
-                    case STORE:   listener.storeStart(ctx);   break;
-                    case INSERT:  listener.insertStart(ctx);  break;
-                    case UPDATE:  listener.updateStart(ctx);  break;
-                    case DELETE:  listener.deleteStart(ctx);  break;
-                    default:
-                        throw new IllegalStateException("Type not supported: " + type);
-                }
+                listenerStart(ctx, listener);
             }
+        }
+    }
+
+    private void listenerStart(DefaultRecordContext ctx, RecordListener listener) {
+        switch (type) {
+            case LOAD:    listener.loadStart(ctx);    break;
+            case REFRESH: listener.refreshStart(ctx); break;
+            case STORE:   listener.storeStart(ctx);   break;
+            case INSERT:  listener.insertStart(ctx);  break;
+            case UPDATE:  listener.updateStart(ctx);  break;
+            case DELETE:  listener.deleteStart(ctx);  break;
+            default:
+                throw new IllegalStateException("Type not supported: " + type);
         }
     }
 

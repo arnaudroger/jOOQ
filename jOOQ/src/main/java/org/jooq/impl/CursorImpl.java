@@ -1409,7 +1409,8 @@ class CursorImpl<R extends Record> implements Cursor<R> {
                         rs.updateRow();
                     }
 
-                    record = Utils.newRecord(true, (RecordInstantiator<AbstractRecord>)recordInstantiator, fields, ctx.configuration()).operate(initialiser);
+                    RecordDelegate<AbstractRecord> recordDelegate = Utils.newRecord(true, (RecordInstantiator<AbstractRecord>) recordInstantiator, fields, ctx.configuration());
+                    record = recordDelegate.operate(initialiser);
 
                     rows++;
                 }
@@ -1452,20 +1453,28 @@ class CursorImpl<R extends Record> implements Cursor<R> {
                 ctx.record(record);
                 listener.recordStart(ctx);
 
-                for (int i = 0; i < fields.length; i++) {
-                    setValue(record, fields[i], i);
-                }
+                setValues(record);
 
-                for (int i = 0; i < fields.length; i++) {
-                    if (intern[i]) {
-                        record.intern0(i);
-                    }
-                }
+                internValues(record);
 
                 ctx.record(record);
                 listener.recordEnd(ctx);
 
                 return record;
+            }
+
+            private void internValues(AbstractRecord record) {
+                for (int i = 0; i < fields.length; i++) {
+                    if (intern[i]) {
+                        record.intern0(i);
+                    }
+                }
+            }
+
+            private void setValues(AbstractRecord record) throws SQLException {
+                for (int i = 0; i < fields.length; i++) {
+                    setValue(record, fields[i], i);
+                }
             }
 
             /**
@@ -1475,7 +1484,7 @@ class CursorImpl<R extends Record> implements Cursor<R> {
 //                DefaultBindingGetResultSetContext<T> out = new DefaultBindingGetResultSetContext<T>(ctx.configuration(), ctx.resultSet(), index + 1);
                 Binding<?, T> binding = field.getBinding();
 //                binding.get(out);
-                T value = binding.get(ctx.configuration(), ctx.resultSet(),index+ 1);
+                T value = binding.get(ctx.configuration(), ctx.resultSet(), index + 1);
 
                 record.values[index] = value;
                 record.originals[index] = value;

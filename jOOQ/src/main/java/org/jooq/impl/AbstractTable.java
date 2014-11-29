@@ -157,22 +157,22 @@ abstract class AbstractTable<R extends Record> extends AbstractQueryPart impleme
 
     @Override
     public final <T> Field<T> field(Field<T> field) {
-        return fieldsRow().field(field);
+        return fields0().field(field);
     }
 
     @Override
     public final Field<?> field(String string) {
-        return fieldsRow().field(string);
+        return fields0().field(string);
     }
 
     @Override
     public final Field<?> field(int index) {
-        return fieldsRow().field(index);
+        return fields0().field(index);
     }
 
     @Override
     public final Field<?>[] fields() {
-        return fieldsRow().fields();
+        return fields0().fields();
     }
 
     @Override
